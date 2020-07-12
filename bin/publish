@@ -1,0 +1,27 @@
+#!/bin/bash
+
+CURRENT_SCRIPT_DIR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source "$CURRENT_SCRIPT_DIR_PATH/lib/commons.bash"
+
+function outputHelp
+{
+    echo "runs the following sequence of commands"
+    echo ""
+    echo "  git add -A"
+    echo "  git commit -m \"<timestamp>\""
+    echo "  git push -u origin source"
+    echo ""
+    echo 'note: only works on the '"'"source"'"' branch, and if `git status -s` returns at least one line'
+}
+
+isRequestingHelp "$@"
+[[ "$?" == "0" ]] && outputHelp && exit 0
+hasAtLeastOneArgument "$@"
+[[ "$?" == "0" ]] && echo "error: expecting no arguments" && exit 1
+
+CURRENT_BRANCH="$(getCurrentBranch)"
+[[ "$CURRENT_BRANCH" != "source" ]] && echo "error: can only publish from 'source' branch" && exit 1
+LAST_SOURCE_COMMIT=$(getLastCommitMessage "source")
+[[ -z "$LAST_SOURCE_COMMIT" ]] && echo "error: the 'source' branch must be saved before being published" && exit 1
+[[ ! -z "$(git status -s)" ]] && printf 'error: you cannot publish the 'source' branch with working changes - save it first, or run `git stash push -u` \nto stash the changes and run `git stash pop` after publishing to restore them.\n' && exit 1
+

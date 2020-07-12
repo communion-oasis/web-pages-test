@@ -5,26 +5,38 @@ source "$CURRENT_SCRIPT_DIR_PATH/lib/commons.bash"
 
 function outputHelp
 {
-    echo "runs the following sequence of commands"
+    echo "Usage: ./bin/save [message]"
+    echo ""
+    echo "  [message] if omitted defaults to a timestamp."
+    echo ""
+    echo "Runs the following sequence of commands"
     echo ""
     echo "  git add -A"
-    echo "  git commit -m \"<timestamp>\""
+    echo "  git commit -m <message>"
     echo "  git push -u origin source"
     echo ""
-    echo 'note: only works on the '"'"source"'"' branch, and if `git status -s` returns at least one line'
+    echo 'note: only works on the '"'"source"'"' branch, and if `git status -s` outputs at least one line'
+}
+
+function getMessageArg
+{
+    local MESSAGE="$1"
+    [[ -z "$MESSAGE" ]] && MESSAGE="$(date +'%Y-%m-%d-%H-%M')"
+    echo "$MESSAGE"
 }
 
 isRequestingHelp "$@"
 [[ "$?" == "0" ]] && outputHelp && exit 0
-hasAtLeastOneArgument "$@"
-[[ "$?" == "0" ]] && echo "error: expecting no arguments" && exit 1
+hasMoreThanOneArgument "$@"
+[[ "$?" == "0" ]] && echo "error: expecting at most one argument" && exit 1
+MESSAGE="$(getMessageArg "$@")"
 
 CURRENT_BRANCH="$(getCurrentBranch)"
 [[ "$CURRENT_BRANCH" != "source" ]] && echo "error: can only save from 'source' branch" && exit 1
 isSaveable
 if [[ "$?" == "0" ]]; then
     git add -A
-    git commit -m "$(date +'%Y-%m-%d-%H-%M')"
+    git commit -m "$MESSAGE"
     git push -u origin source
 else
     echo "nothing to save"
