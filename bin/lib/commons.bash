@@ -40,3 +40,9 @@ function getProjectName
 {
     [[ "$(git remote get-url origin)" =~ [:\/]([^:\/\.]+)(\.git)?$ ]] && echo "${BASH_REMATCH[1]}"
 }
+
+function getRandomKey
+{
+    head /dev/urandom | tr -dc a-zA-Z0-9 | head -c 13
+    echo ""
+}
