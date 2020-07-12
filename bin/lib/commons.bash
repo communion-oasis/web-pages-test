@@ -35,3 +35,8 @@ function getLastCommitMessage
     doesBranchExist "$BRANCH_NAME"
     [[ "$?" == "0" ]] && git log -1  --pretty='%s' "$BRANCH_NAME"
 }
+
+function getProjectName
+{
+    [[ "$(git remote get-url origin)" =~ [:\/]([^:\/\.]+)(\.git)?$ ]] && echo "${BASH_REMATCH[1]}"
+}
